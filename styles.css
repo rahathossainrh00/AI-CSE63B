@@ -184,6 +184,14 @@ body {
     border: 3px solid #fbbf24;
 }
 
+.calendar-day.today.has-event-purple {
+    border: 3px solid #fbbf24;
+}
+
+.calendar-day.today.has-event-gradient {
+    border: 3px solid #fbbf24;
+}
+
 .calendar-day.weekend-day {
     color: #dc2626 !important;
     font-weight: 600;
@@ -211,6 +219,16 @@ body {
 
 .calendar-day.has-event-red:hover {
     background-color: #b91c1c;
+}
+
+.calendar-day.has-event-gradient {
+    background: linear-gradient(135deg, #2563eb, #9333ea);
+    color: white;
+    font-weight: 600;
+}
+
+.calendar-day.has-event-gradient:hover {
+    background: linear-gradient(135deg, #1d4ed8, #7c3aed);
 }
 
 /* ============================================

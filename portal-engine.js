@@ -43,10 +43,10 @@ function showToast(message, type = 'info') {
 
     // Set icon and border color based on type
     const config = {
-        success: { icon: 'Ã¢Å“â€¦', borderColor: 'border-green-500', bg: 'bg-green-50' },
-        error: { icon: 'Ã¢ÂÅ’', borderColor: 'border-red-500', bg: 'bg-red-50' },
-        warning: { icon: 'Ã¢Å¡Â Ã¯Â¸Â', borderColor: 'border-yellow-500', bg: 'bg-yellow-50' },
-        info: { icon: 'Ã¢â€žÂ¹Ã¯Â¸Â', borderColor: 'border-blue-500', bg: 'bg-blue-50' }
+        success: { icon: '\u2705', borderColor: 'border-green-500', bg: 'bg-green-50' },
+        error: { icon: '\u274C', borderColor: 'border-red-500', bg: 'bg-red-50' },
+        warning: { icon: '\u26A0\uFE0F', borderColor: 'border-yellow-500', bg: 'bg-yellow-50' },
+        info: { icon: '\u2139\uFE0F', borderColor: 'border-blue-500', bg: 'bg-blue-50' }
     };
 
     const c = config[type] || config.info;
@@ -460,13 +460,13 @@ function createAssignmentCard(assignment) {
     let urgencyClass = '';
     let urgencyLabel = '';
     if (isPast) {
-        urgencyLabel = '<span aria-label="Deadline passed" class="flex items-center gap-1 text-sm font-semibold text-gray-500"><span>Ã¢â€ºâ€</span> Deadline Passed</span>';
+        urgencyLabel = '<span aria-label="Deadline passed" class="flex items-center gap-1 text-sm font-semibold text-gray-500"><span>\u23F3</span> Deadline Passed</span>';
     } else if (hoursLeft <= 24) {
         urgencyClass = 'countdown-urgent-red';
-        urgencyLabel = '<span aria-label="Urgent: less than 24 hours remaining" class="flex items-center gap-1 text-xs font-bold text-red-600"><span>Ã°Å¸â€Â´</span> Urgent</span>';
+        urgencyLabel = '<span aria-label="Urgent: less than 24 hours remaining" class="flex items-center gap-1 text-xs font-bold text-red-600"><span>\uD83D\uDD34</span> Urgent</span>';
     } else if (hoursLeft <= 48) {
         urgencyClass = 'countdown-urgent-orange';
-        urgencyLabel = '<span aria-label="Due soon: less than 48 hours remaining" class="flex items-center gap-1 text-xs font-bold text-orange-600"><span>Ã¢Å¡Â Ã¯Â¸Â</span> Due Soon</span>';
+        urgencyLabel = '<span aria-label="Due soon: less than 48 hours remaining" class="flex items-center gap-1 text-xs font-bold text-orange-600"><span>\u26A0\uFE0F</span> Due Soon</span>';
     }
 
     return `
@@ -477,7 +477,7 @@ function createAssignmentCard(assignment) {
                     <span class="text-xs font-semibold px-3 py-1 rounded-full ${assignment.categoryColor}">
                         ${escapeHTML(assignment.category)}
                     </span>
-                    ${assignment.subject ? `<span class="text-xs font-semibold px-3 py-1 rounded-full bg-slate-100 text-slate-700">${escapeHTML(assignment.subject)}</span>` : ''}
+                    ${assignment.subject ? `<span class="text-xs font-semibold px-3 py-1 rounded-full bg-blue-600 text-white">${escapeHTML(assignment.subject)}</span>` : ''}
                     ${urgencyLabel}
                 </div>
             </div>
@@ -1049,10 +1049,21 @@ function generateCalendar(monthOffset = 0) {
 
         let colorClass = '';
         if (hasEvent) {
-            const event = calendarEvents[dateStr][0];
-            if (event.category === 'Test') colorClass = 'has-event-purple';
-            else if (event.category === 'Off Day') colorClass = 'has-event-red';
-            else colorClass = 'has-event';
+            const events = calendarEvents[dateStr];
+            const categories = events.map(e => e.category);
+            const hasTest = categories.includes('Test');
+            const hasRegularEvent = categories.some(c => c !== 'Test' && c !== 'Off Day');
+            const hasOffDay = categories.includes('Off Day');
+
+            if (hasTest && hasRegularEvent) {
+                colorClass = 'has-event-gradient';
+            } else if (hasTest) {
+                colorClass = 'has-event-purple';
+            } else if (hasOffDay) {
+                colorClass = 'has-event-red';
+            } else {
+                colorClass = 'has-event';
+            }
         } else if (isFridayOrSaturday) {
             colorClass = 'weekend-day';
         }
