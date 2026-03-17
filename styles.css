@@ -1,0 +1,518 @@
+/* ============================================
+   CSE 63B Portal — Main Stylesheet
+   ============================================ */
+
+:root {
+    --primary-blue: #2563eb;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background-color: #f7f7f7;
+}
+
+.section-padding {
+    padding: 3rem 1rem;
+}
+
+@media (min-width: 640px) {
+    .section-padding {
+        padding: 4rem 2rem;
+    }
+}
+
+/* ============================================
+   Progress Bar
+   ============================================ */
+
+#progress-bar {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    height: 3px;
+    background: linear-gradient(to right, #2563eb, #7c3aed);
+    width: 0%;
+    transition: width 0.1s ease;
+    z-index: 40;
+}
+
+/* ============================================
+   Navigation
+   ============================================ */
+
+.nav-link.active {
+    color: #2563eb;
+    font-weight: 600;
+    border-bottom: 2px solid #2563eb;
+}
+
+#mobile-menu {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+#mobile-menu.open {
+    max-height: 500px;
+}
+
+/* ============================================
+   Schedule Table
+   ============================================ */
+
+.schedule-table {
+    border-collapse: separate;
+    border-spacing: 0 12px;
+}
+
+/* ============================================
+   Countdown
+   ============================================ */
+
+.countdown-box {
+    min-width: 45px;
+}
+
+.countdown-urgent-red .countdown-box {
+    background-color: #fee2e2;
+}
+
+.countdown-urgent-red .text-xl {
+    color: #dc2626;
+}
+
+.countdown-urgent-orange .countdown-box {
+    background-color: #fed7aa;
+}
+
+.countdown-urgent-orange .text-xl {
+    color: #ea580c;
+}
+
+/* ============================================
+   Animations
+   ============================================ */
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-animate {
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-content-animate {
+    animation: slideUp 0.3s ease-out;
+}
+
+/* ============================================
+   Dropdowns
+   ============================================ */
+
+.dropdown-content {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out;
+}
+
+.dropdown-content.open {
+    max-height: 2000px;
+}
+
+/* ============================================
+   Custom Scrollbar
+   ============================================ */
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+/* ============================================
+   Calendar
+   ============================================ */
+
+.calendar-day {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+
+.calendar-day:hover {
+    background-color: #dbeafe;
+}
+
+.calendar-day.has-event {
+    background-color: #2563eb;
+    color: white;
+    font-weight: 600;
+}
+
+.calendar-day.has-event:hover {
+    background-color: #1d4ed8;
+}
+
+.calendar-day.today {
+    border: 3px solid #2563eb;
+    font-weight: bold;
+}
+
+.calendar-day.today.has-event {
+    border: 3px solid #fbbf24;
+}
+
+.calendar-day.weekend-day {
+    color: #dc2626 !important;
+    font-weight: 600;
+}
+
+.calendar-day.weekend-day:hover {
+    background-color: #fee2e2;
+}
+
+.calendar-day.has-event-purple {
+    background-color: #9333ea;
+    color: white;
+    font-weight: 600;
+}
+
+.calendar-day.has-event-purple:hover {
+    background-color: #7c3aed;
+}
+
+.calendar-day.has-event-red {
+    background-color: #dc2626;
+    color: white;
+    font-weight: 600;
+}
+
+.calendar-day.has-event-red:hover {
+    background-color: #b91c1c;
+}
+
+/* ============================================
+   Tooltip
+   ============================================ */
+
+.tooltip {
+    position: absolute;
+    z-index: 1000;
+    background: white;
+    border: 2px solid #2563eb;
+    border-radius: 8px;
+    padding: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    max-width: 250px;
+    display: none;
+}
+
+.tooltip.show {
+    display: block;
+}
+
+/* ============================================
+   Skeleton Loading
+   ============================================ */
+
+.skeleton {
+    background: linear-gradient(
+        90deg, 
+        #e0e7ff 0%, 
+        #c7d2fe 50%, 
+        #e0e7ff 100%
+    );
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite ease-in-out;
+    border-radius: 12px;
+}
+
+@keyframes loading {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+}
+
+/* ============================================
+   Badges
+   ============================================ */
+
+.new-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #ef4444;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 9999px;
+    font-weight: bold;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* ============================================
+   Mobile Touch Targets
+   ============================================ */
+
+@media (max-width: 768px) {
+    button, a {
+        min-height: 44px;
+        min-width: 44px;
+    }
+}
+
+/* ============================================
+   Scroll Indicator
+   ============================================ */
+
+.scroll-indicator {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(-50%) translateX(0); }
+    50% { transform: translateY(-50%) translateX(10px); }
+}
+
+.swipe-indicator {
+    width: 40px;
+    height: 4px;
+    background: #d1d5db;
+    border-radius: 2px;
+    margin: 0 auto 16px;
+}
+
+/* ============================================
+   Print Styles
+   ============================================ */
+
+@media print {
+    nav, button, .modal, #progress-bar {
+        display: none !important;
+    }
+    
+    .section-padding {
+        page-break-inside: avoid;
+    }
+    
+    body {
+        background: white;
+    }
+}
+
+/* ============================================
+   Breadcrumbs
+   ============================================ */
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #6b7280;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.breadcrumb-separator {
+    color: #d1d5db;
+}
+
+/* ============================================
+   Floating Action Button
+   ============================================ */
+
+.fab {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    background: #2563eb;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 50;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(37, 99, 235, 0.6);
+}
+
+.fab.admin-fab {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+}
+
+/* ============================================
+   Custom Loader
+   ============================================ */
+
+.custom-loader {
+    height: 60px;
+    aspect-ratio: 2;
+    border-bottom: 3px solid #0000;
+    background: 
+        linear-gradient(90deg, #2563eb 50%, #0000 0)
+        -25% 100%/50% 3px repeat-x border-box;
+    position: relative;
+    animation: loader-track .75s linear infinite;
+}
+
+.custom-loader:before {
+    content: "";
+    position: absolute;
+    inset: auto 42.5% 0;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: #7c3aed;
+    animation: loader-bounce .75s cubic-bezier(0,900,1,900) infinite;
+}
+
+@keyframes loader-track {
+    to {background-position: -125% 100%}
+}
+
+@keyframes loader-bounce {
+    0%, 2% {bottom: 0%}
+    98%, to {bottom: 0.1%}
+}
+
+/* ============================================
+   Loading Overlay
+   ============================================ */
+
+#loading-overlay {
+    backdrop-filter: blur(8px);
+    background: rgba(255, 255, 255, 0.9);
+}
+
+/* ============================================
+   Toast Notification
+   ============================================ */
+
+.toast-slide-up {
+    animation: slideUp 0.3s ease-out;
+}
+
+/* ============================================
+   Swipe Affordance (Task 8)
+   ============================================ */
+
+.swipe-text {
+    display: none;
+    text-align: center;
+    font-size: 11px;
+    color: #9ca3af;
+    margin: -12px 0 8px;
+    pointer-events: none;
+}
+
+@media (pointer: coarse) {
+    .swipe-text {
+        display: block;
+    }
+}
+
+/* ============================================
+   Dark Mode Icon Toggle (Task 10)
+   ============================================ */
+
+.dark .dark-icon {
+    display: none !important;
+}
+
+.dark .light-icon {
+    display: inline-block !important;
+}
+
+/* ============================================
+   Update Banner (Task 5)
+   ============================================ */
+
+@keyframes slideDown {
+    from { transform: translateY(-100%); }
+    to { transform: translateY(0); }
+}
+
+.update-banner-slide {
+    animation: slideDown 0.4s ease-out;
+}
+
+/* ============================================
+   Dark Mode Overrides
+   ============================================ */
+
+.dark .tooltip {
+    background: #1f2937;
+    border-color: #3b82f6;
+    color: #e5e7eb;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-track {
+    background: #374151;
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #6b7280;
+}
+
+.dark .skeleton {
+    background: linear-gradient(90deg, #374151 0%, #4b5563 50%, #374151 100%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite ease-in-out;
+}
+
+.dark #loading-overlay {
+    background: rgba(17, 24, 39, 0.9);
+}
+
+.dark .swipe-indicator {
+    background: #4b5563;
+}
+
+.dark .breadcrumb {
+    color: #9ca3af;
+}
+
+.dark .breadcrumb-separator {
+    color: #4b5563;
+}
+

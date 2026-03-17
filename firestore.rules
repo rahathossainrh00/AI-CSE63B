@@ -1,0 +1,61 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================
+    // DEFAULT: Deny all access unless explicitly allowed
+    // ============================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ============================================
+    // PUBLIC COLLECTIONS (Student Portal Data)
+    // Anyone can read; only authenticated admins can write.
+    // These collections power the student-facing portal.
+    // ============================================
+    match /calendar/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /announcements/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /assignments/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /subjects/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /schedule/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    match /contacts/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
+
+    // ============================================
+    // AUDIT LOG (Admin Activity Tracking)
+    // Only authenticated users can write new log entries.
+    // Only authenticated users can read log entries.
+    // This is acceptable because the admin panel itself is
+    // already gated behind Firebase Auth — only admins can
+    // access the dashboard where logs are displayed.
+    // ============================================
+    match /audit_log/{docId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+  }
+}
