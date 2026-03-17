@@ -26,6 +26,15 @@ const CONFIG = {
 // Firestore REST API base (do not change)
 const FIRESTORE_BASE = `https://firestore.googleapis.com/v1/projects/${CONFIG.FIRESTORE_PROJECT_ID}/databases/(default)/documents`;
 
+function getSemesterStart() {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+
+  if (month >= 8) return new Date(now.getFullYear(), 7, 1);  // Aug 1
+  if (month >= 5) return new Date(now.getFullYear(), 4, 1);  // May 1
+  return new Date(now.getFullYear(), 0, 1);                  // Jan 1
+}
+
 // ============================================================
 // GOOGLE CALENDAR COLOR ID REFERENCE
 // ============================================================
@@ -254,7 +263,6 @@ function _syncClassroomToFirestore() {
     Logger.log(`🎓 Found ${matchedCourses.length} matching Classroom course(s).`);
 
     const now = new Date();
-    const cutoffPast = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
 
     for (const course of matchedCourses) {
       try {
@@ -308,10 +316,12 @@ function _syncClassroomToFirestore() {
               }
             }
 
-            // Filter: only sync if deadline is in future or within 7 days past
+            Logger.log(`     [DEBUG] Title: "${cw.title}" | Raw dueDate: ${JSON.stringify(cw.dueDate)} | Built deadline: ${deadline}`);
+
+            // Filter: only sync if deadline is within the current semester
             if (deadline) {
               const deadlineDate = new Date(deadline);
-              if (deadlineDate < cutoffPast) continue;
+              if (deadlineDate < getSemesterStart()) continue;
             }
 
             found++;
