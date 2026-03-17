@@ -316,8 +316,6 @@ function _syncClassroomToFirestore() {
               }
             }
 
-            Logger.log(`     [DEBUG] Title: "${cw.title}" | Raw dueDate: ${JSON.stringify(cw.dueDate)} | Built deadline: ${deadline}`);
-
             // Filter: only sync if deadline is within the current semester
             if (deadline) {
               const deadlineDate = new Date(deadline);

@@ -8,6 +8,7 @@ let calendarCache = {};
 let currentFilter = 'all';
 let announcementsData = [];
 let assignmentsData = [];
+let allAssignmentsData = [];
 let subjectsData = [];
 let calendarEvents = {};
 let contactData = [];
@@ -231,7 +232,8 @@ async function loadPhase1() {
             getCollection('assignments')
         ]);
         announcementsData = mapAnnouncements(announcements);
-        assignmentsData = mapAssignments(assignments);
+        allAssignmentsData = mapAssignments(assignments);
+        assignmentsData = [...allAssignmentsData];
         renderAnnouncements();
         renderAssignments();
     } catch (error) {
@@ -602,7 +604,8 @@ function startGlobalCountdown() {
 // ============================================
 
 function openAssignmentDetails(assignmentId) {
-    const assignment = assignmentsData.find(a => a.id === assignmentId);
+    const assignment = allAssignmentsData.find(a => a.id === assignmentId)
+                    || assignmentsData.find(a => a.id === assignmentId);
     if (!assignment) return;
 
     const modal = document.getElementById('assignment-details-modal');
@@ -889,14 +892,23 @@ function renderSchedule() {
 // EXPORT SCHEDULE
 // ============================================
 
-function exportSchedule() {
-    const scheduleImageUrl = 'https://drive.google.com/uc?export=download&id=19zx8t0FE02QAwTTGAdBv5VMrsj84MpNI';
-    const link = document.createElement('a');
-    link.href = scheduleImageUrl;
-    link.download = 'CSE_63B_Schedule.png';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+async function exportSchedule() {
+    try {
+        const doc = await getDocument('settings', 'schedule_export');
+        if (!doc || !doc.exportImageUrl) {
+            showToast('Export image not configured yet. Ask your admin to set it up.', 'warning');
+            return;
+        }
+        const link = document.createElement('a');
+        link.href = doc.exportImageUrl;
+        link.download = 'schedule.jpg';
+        link.target = '_blank';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (e) {
+        showToast('Could not load export image.', 'error');
+    }
 }
 
 // ============================================
@@ -1138,32 +1150,58 @@ function renderAssignments() {
     stopGlobalCountdown();
     const container = document.getElementById('assignments-container');
     if (!container) return;
-    const visible = assignmentsData
+
+    let visible = assignmentsData
         .filter(a => shouldShowAssignment(a.deadline))
         .sort((a, b) => new Date(a.deadline) - new Date(b.deadline));
 
+    // Apply category filter
+    if (currentFilter && currentFilter !== 'All' && currentFilter !== 'all') {
+        visible = visible.filter(a => a.category === currentFilter);
+    }
+
+    // Build filter buttons
+    const filterOrder = ['All', 'Assignment', 'Test', 'Presentation'];
+    const filterButtonsHtml = '<div class="col-span-full flex gap-2 flex-wrap mb-4">' + filterOrder.map(f =>
+        `<button class="assignment-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+            (f === 'All' && (currentFilter === 'all' || currentFilter === 'All')) || currentFilter === f
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+        }" data-filter="${f}">${f}</button>`
+    ).join('') + '</div>';
+
     if (visible.length === 0) {
-        container.innerHTML = `
+        container.innerHTML = filterButtonsHtml + `
             <div class="col-span-full text-center py-12">
                 <i data-lucide="check-circle" class="w-16 h-16 mx-auto text-green-500 mb-4"></i>
                 <p class="text-gray-500 text-lg font-medium">No active assignments</p>
-                <p class="text-gray-400 text-sm mt-2">You're all caught up! Ã°Å¸Å½â€°</p>
+                <p class="text-gray-400 text-sm mt-2">You're all caught up!</p>
             </div>
         `;
         const statsDiv = document.getElementById('assignment-stats');
         if (statsDiv) statsDiv.style.display = 'none';
     } else {
-        container.innerHTML = visible.map(createAssignmentCard).join('');
+        container.innerHTML = filterButtonsHtml + visible.map(createAssignmentCard).join('');
         renderAssignmentStats(visible);
         startGlobalCountdown();
     }
 
+    // Bind filter button clicks
+    document.querySelectorAll('.assignment-filter-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            currentFilter = this.dataset.filter;
+            renderAssignments();
+        });
+    });
+
     // Bind click handlers
-    document.querySelectorAll('.assignment-card').forEach(card => {
+    container.querySelectorAll('.assignment-card').forEach(card => {
         card.addEventListener('click', function () {
             openAssignmentDetails(this.dataset.assignmentId);
         });
     });
+
+    lucide.createIcons();
 }
 
 function renderSubjects() {
@@ -1475,10 +1513,10 @@ function initModalHandlers() {
     if (openAssignmentHistoryBtn) {
         openAssignmentHistoryBtn.addEventListener('click', function () {
             const body = document.getElementById('assignment-history-body');
-            const allAssignments = assignmentsData.filter(a => !shouldShowAssignment(a.deadline));
+            const allAssignments = allAssignmentsData.filter(a => !shouldShowAssignment(a.deadline));
 
             // Build search + filter UI
-            const categories = ['All', ...new Set(allAssignments.map(a => a.category))];
+            const categories = ['All', 'Assignment', 'Test', 'Presentation'];
             const filterButtons = categories.map(c => 
                 `<button class="history-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold transition ${
                     c === 'All' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
@@ -1526,6 +1564,11 @@ function initModalHandlers() {
                 } else {
                     resultsDiv.innerHTML = '<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">' +
                         filtered.map(createAssignmentCard).join('') + '</div>';
+                    resultsDiv.querySelectorAll('.assignment-card').forEach(card => {
+                        card.addEventListener('click', function () {
+                            openAssignmentDetails(this.dataset.assignmentId);
+                        });
+                    });
                 }
                 lucide.createIcons();
             }
@@ -1633,7 +1676,8 @@ function applyPendingUpdate() {
     const d = pendingUpdateData;
     calendarCache = {};
     announcementsData = mapAnnouncements(d.announcements);
-    assignmentsData = mapAssignments(d.assignments);
+    allAssignmentsData = mapAssignments(d.assignments);
+    assignmentsData = [...allAssignmentsData];
     subjectsData = mapSubjects(d.subjects);
     calendarEvents = mapCalendar(d.calendar);
     contactData = mapContacts(d.contacts);

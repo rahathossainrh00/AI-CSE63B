@@ -1247,6 +1247,43 @@ window.bulkDelete = bulkDelete;
 window.archiveItems = archiveItems;
 window.toggleDayCollapse = toggleDayCollapse;
 window.openEditorForDay = openEditorForDay;
+window.saveScheduleExportUrl = saveScheduleExportUrl;
+
+// ============================================
+// SCHEDULE EXPORT URL SETTINGS
+// ============================================
+
+async function loadScheduleExportUrl() {
+    try {
+        const doc = await getDocument('settings', 'schedule_export');
+        const input = document.getElementById('export-url-input');
+        if (input && doc && doc.exportImageUrl) {
+            input.value = doc.exportImageUrl;
+        }
+    } catch (e) {
+        // Silently fail — field stays empty
+    }
+}
+
+async function saveScheduleExportUrl() {
+    const input = document.getElementById('export-url-input');
+    if (!input || !input.value.trim()) {
+        showToast('Please enter a valid URL.', 'warning');
+        return;
+    }
+    try {
+        showLoading(true);
+        // Use set (via updateDocument) — create or overwrite the document
+        await db.collection('settings').doc('schedule_export').set(
+            { exportImageUrl: input.value.trim() },
+            { merge: true }
+        );
+        showToast('Export URL saved successfully.', 'success');
+    } catch (e) {
+        showToast('Failed to save URL.', 'error');
+    }
+    showLoading(false);
+}
 
 // ============================================
 // SCHEDULE — GROUPED BY DAY RENDERER
@@ -1281,7 +1318,20 @@ function loadScheduleGrouped(container, data) {
         html += renderScheduleDayCard(day, grouped[day]);
     });
 
-    container.innerHTML = html;
+    container.innerHTML = `
+        <div class="bg-white border border-gray-200 rounded-xl p-5 mb-6">
+            <h3 class="text-sm font-semibold text-gray-700 mb-3">Schedule Export Image</h3>
+            <div class="flex gap-3 items-center">
+                <input type="text" id="export-url-input" placeholder="https://drive.google.com/..."
+                    class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                <button onclick="saveScheduleExportUrl()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition whitespace-nowrap">
+                    Save URL
+                </button>
+            </div>
+        </div>
+    ` + html;
+    loadScheduleExportUrl();
 }
 
 function renderScheduleDayCard(day, classes) {
