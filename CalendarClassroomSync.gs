@@ -14,13 +14,6 @@ const CONFIG = {
   SYNC_DAYS_PAST: 30,
   SYNC_DAYS_FUTURE: 180,
   TIMEZONE: 'Asia/Dhaka',
-
-  SUBJECT_MAP: {
-    'Basic Electrical Engineering': 'BEE',
-    'Data Structures': 'DS',
-    'Differential Equation & Laplace Transform': 'DE&LT',
-    'Engineering Ethics and Cyber Law': 'EE&CL',
-  },
 };
 
 // Firestore REST API base (do not change)
@@ -71,7 +64,59 @@ function syncAll() {
 }
 
 function manualSync() {
+  syncCourseList(); // always refresh course list on manual sync
   syncAll();
+}
+
+function syncCourseList() {
+  try {
+    const response = Classroom.Courses.list({ courseStates: ['ACTIVE'] });
+    const semesterStart = getSemesterStart();
+    const courses = (response.courses || [])
+      .filter(c => {
+        if (!c.creationTime) return false;
+        const created = new Date(c.creationTime);
+        return created >= semesterStart;
+      })
+      .map(c => c.name)
+      .filter(Boolean);
+
+    Logger.log(`📅 Semester start: ${semesterStart.toISOString()}`);
+    Logger.log(`📋 Courses after semester filter: ${courses.join(', ')}`);
+    
+    setFirestoreDoc('settings', 'classroom_courses', {
+      courses: courses,
+      lastSynced: new Date().toISOString()
+    });
+    
+    Logger.log(`✅ Synced ${courses.length} Classroom course(s) to Firestore.`);
+    Logger.log(`   Courses: ${courses.join(', ')}`);
+  } catch (e) {
+    Logger.log(`❌ Failed to sync course list: ${e.message}`);
+  }
+}
+
+function buildSubjectMapFromFirestore() {
+  try {
+    const docs = fetchAllDocsInCollection('subjects');
+    const map = {};
+    
+    for (const doc of docs) {
+      const fields = parseFirestoreFields(doc.fields);
+      const gcrName = fields.gcr_name || '';
+      const shortName = fields.short_name || '';
+      
+      if (gcrName && shortName) {
+        map[gcrName] = shortName;
+      }
+    }
+    
+    Logger.log(`📚 Built subject map from Firestore: ${JSON.stringify(map)}`);
+    return map;
+  } catch (e) {
+    Logger.log(`❌ Failed to build subject map: ${e.message}`);
+    return {};
+  }
 }
 
 // ============================================================
@@ -158,7 +203,7 @@ function _syncCalendarToFirestore() {
         // If Test → also write to assignments collection
         if (category === 'Test') {
           const location = event.getLocation() || '';
-          let subject = location.trim();
+          let subject = location.trim().toUpperCase();
           if (!subject) {
             subject = 'General';
             Logger.log(`  ⚠️ Warning: Test event "${calendarDoc.title}" has no Location (subject). Defaulting to "General".`);
@@ -243,8 +288,15 @@ function _syncClassroomToFirestore() {
   let coursesChecked = 0, found = 0, created = 0, updated = 0, skipped = 0, errored = 0;
 
   try {
-    // Get all courses the user has access to
-    const courseNames = Object.keys(CONFIG.SUBJECT_MAP);
+    // Build dynamic map from settings
+    const SUBJECT_MAP = buildSubjectMapFromFirestore();
+    const courseNames = Object.keys(SUBJECT_MAP);
+    
+    if (courseNames.length === 0) {
+      Logger.log(`⚠️ Warning: No courses mapped in subjects collection. Skipping Classroom sync.`);
+      return;
+    }
+
     let allCourses;
 
     try {
@@ -271,7 +323,7 @@ function _syncClassroomToFirestore() {
 
         // Resolve subject abbreviation
         let subject = courseName; // fallback
-        for (const [fullName, abbrev] of Object.entries(CONFIG.SUBJECT_MAP)) {
+        for (const [fullName, abbrev] of Object.entries(SUBJECT_MAP)) {
           if (courseName.includes(fullName)) {
             subject = abbrev;
             break;
