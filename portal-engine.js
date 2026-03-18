@@ -307,7 +307,7 @@ function parseLinks(linksData) {
 }
 
 function getSubjectColor(name) {
-    return 'bg-blue-600';
+    return '#2563eb';
 }
 
 function transformResources(resources) {
