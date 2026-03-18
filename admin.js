@@ -321,6 +321,12 @@ function switchSection(section) {
     if (addNewBtn) {
         addNewBtn.style.display = (section === 'schedule') ? 'none' : '';
     }
+    
+    // Hide/show Sync GCR Courses button for subjects section ONLY
+    const syncCoursesBtn = document.getElementById('sync-courses-btn');
+    if (syncCoursesBtn) {
+        syncCoursesBtn.style.display = (section === 'subjects') ? '' : 'none';
+    }
 
     loadSectionData(section);
 }
@@ -446,8 +452,10 @@ function renderDataItem(section, item) {
                         <div class="flex items-center gap-2 mb-1">
                             <span class="text-xs font-bold px-2 py-1 rounded-full bg-green-100 text-green-700">${escapeHTML(item.tag || '')}</span>
                         </div>
-                        <p class="font-semibold text-gray-800">${escapeHTML(item.subjectname || '')} (${escapeHTML(item.coursecode || '')})</p>
-                        <p class="text-sm text-gray-500">${escapeHTML(item.teachername || '')}</p>
+                        <p class="font-semibold text-gray-800">
+                            ${escapeHTML(item.subjectname || '')} &bull; ${escapeHTML(item.short_name || '')} &bull; ${escapeHTML(item.gcr_name || 'Not linked')}
+                        </p>
+                        <p class="text-sm text-gray-500">${escapeHTML(item.coursecode || '')} | ${escapeHTML(item.teachername || '')}</p>
                     </div>
                     <div class="flex gap-2 flex-shrink-0">
                         <button onclick="editItem('${item.id}')" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-3 py-2 rounded-lg text-sm font-medium transition">Edit</button>
@@ -519,6 +527,7 @@ function openEditor(data = null, prefilledDay = null) {
     setTimeout(() => {
         if (currentSection === 'subjects') {
             initSubjectResourceForm();
+            populateGcrDropdown(data?.gcr_name || '');
         } else if (currentSection === 'assignments') {
             initAssignmentLinksForm();
         }
@@ -672,6 +681,23 @@ function renderForm_subjects(data) {
             <label class="block text-sm font-medium text-gray-700 mb-2">Subject Name</label>
             <input type="text" id="field-subjectname" value="${escapeHTML(data?.subjectname || '')}" required
                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Short Name</label>
+            <input type="text" id="field-short_name" value="${escapeHTML(data?.short_name || '')}" placeholder="e.g. BEE, DS, DE&LT" required
+                   class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+                   style="text-transform: uppercase;"
+                   oninput="this.value = this.value.toUpperCase()">
+            <p class="text-xs text-gray-400 mt-1">Abbreviation shown on assignment badges</p>
+        </div>
+        <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">GCR Course Name</label>
+            <select id="field-gcr_name"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                <option value="">— Not linked to Classroom —</option>
+                <!-- populated dynamically from settings/classroom_courses -->
+            </select>
+            <p class="text-xs text-gray-400 mt-1">Match to the exact Google Classroom course name</p>
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-2">Course Code</label>
@@ -895,6 +921,8 @@ function getFormData(section) {
 
             formData = {
                 subjectname: document.getElementById('field-subjectname').value,
+                short_name: document.getElementById('field-short_name').value.toUpperCase(),
+                gcr_name: document.getElementById('field-gcr_name').value,
                 coursecode: document.getElementById('field-coursecode').value,
                 teachername: document.getElementById('field-teachername').value,
                 tag: document.getElementById('field-tag').value,
@@ -1226,6 +1254,67 @@ async function archiveItems() {
 }
 
 // ============================================
+// GCR COURSE SYNC (Classroom Integration)
+// ============================================
+
+async function syncClassroomCourses() {
+  showLoading(true);
+  try {
+    const doc = await getDocument('settings', 'classroom_courses');
+    if (!doc || !doc.courses || doc.courses.length === 0) {
+      showToast('No courses found. Run manualSync() in Apps Script first.', 'warning');
+      return;
+    }
+    showToast(`${doc.courses.length} courses loaded successfully.`, 'success');
+    loadSectionData('subjects');
+  } catch (e) {
+    showToast('Failed to load courses.', 'error');
+  } finally {
+    showLoading(false);
+  }
+}
+
+async function populateGcrDropdown(selectedValue = '') {
+  const select = document.getElementById('field-gcr_name');
+  if (!select) return;
+
+  try {
+    const doc = await getDocument('settings', 'classroom_courses');
+    console.log('[GCR] raw doc:', JSON.stringify(doc));
+
+    let courses = [];
+    if (doc && doc.courses) {
+      if (Array.isArray(doc.courses)) {
+        courses = doc.courses;
+      } else if (typeof doc.courses === 'object') {
+        courses = Object.values(doc.courses);
+      }
+    }
+
+    console.log('[GCR] parsed courses:', courses);
+
+    if (courses.length === 0) {
+      select.innerHTML = '<option value="">No courses found — run manualSync() in Apps Script first</option>';
+      return;
+    }
+
+    select.innerHTML = '<option value="">— Not linked to Classroom —</option>';
+    courses.forEach(courseName => {
+      if (!courseName || typeof courseName !== 'string') return;
+      const opt = document.createElement('option');
+      opt.value = courseName;
+      opt.textContent = courseName;
+      if (courseName === selectedValue) opt.selected = true;
+      select.appendChild(opt);
+    });
+
+  } catch (e) {
+    console.error('[GCR] populateGcrDropdown error:', e);
+    select.innerHTML = '<option value="">Could not load courses — check console for details</option>';
+  }
+}
+
+// ============================================
 // MAKE FUNCTIONS GLOBALLY ACCESSIBLE
 // ============================================
 
@@ -1248,6 +1337,7 @@ window.archiveItems = archiveItems;
 window.toggleDayCollapse = toggleDayCollapse;
 window.openEditorForDay = openEditorForDay;
 window.saveScheduleExportUrl = saveScheduleExportUrl;
+window.syncClassroomCourses = syncClassroomCourses;
 
 // ============================================
 // SCHEDULE EXPORT URL SETTINGS
