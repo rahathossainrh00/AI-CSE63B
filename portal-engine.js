@@ -307,7 +307,22 @@ function parseLinks(linksData) {
 }
 
 function getSubjectColor(name) {
-    return '#2563eb';
+    if (!name) return 'bg-gradient-to-br from-blue-500 to-blue-700';
+    const colors = [
+        'bg-gradient-to-br from-blue-500 to-blue-700',
+        'bg-gradient-to-br from-purple-500 to-purple-700',
+        'bg-gradient-to-br from-teal-500 to-teal-700',
+        'bg-gradient-to-br from-rose-500 to-rose-700',
+        'bg-gradient-to-br from-indigo-500 to-indigo-700',
+        'bg-gradient-to-br from-emerald-500 to-emerald-700',
+        'bg-gradient-to-br from-amber-500 to-amber-700',
+        'bg-gradient-to-br from-cyan-500 to-cyan-700'
+    ];
+    let hash = 0;
+    for (let i = 0; i < name.length; i++) {
+        hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
 }
 
 function transformResources(resources) {
