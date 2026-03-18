@@ -67,3 +67,8 @@ node_modules/
 
 # dataconnect generated files
 .dataconnect
+
+# Agent tools and skills configs
+.agent/
+.agents/
+skills-lock.json
