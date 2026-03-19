@@ -303,6 +303,7 @@ function switchSection(section) {
     if (activeBtn) {
         activeBtn.classList.add('active', 'bg-blue-600', 'text-white');
         activeBtn.classList.remove('bg-gray-200', 'text-gray-700');
+        activeBtn.blur();
     }
 
     // Update title
