@@ -24,7 +24,28 @@
     <!-- External CSS -->
     <link rel="stylesheet" href="styles.css">
 
-
+    <style>
+        .section-scroll {
+            -webkit-mask-image: none;
+            mask-image: none;
+            padding: 8px 4px;
+            scrollbar-width: none;
+        }
+        .section-scroll::-webkit-scrollbar {
+            display: none;
+        }
+        .scroll-card {
+            transition: transform 0.25s ease, opacity 0.25s ease;
+        }
+        .card-focused {
+            transform: scale(1.03);
+            opacity: 1;
+        }
+        .card-dimmed {
+            opacity: 0.55;
+            transform: scale(0.97);
+        }
+    </style>
 </head>
 <body class="antialiased bg-gray-50 text-gray-800 transition-colors">
 
@@ -50,7 +71,7 @@
     <!-- Update Banner (Task 5) -->
     <div id="update-banner" class="hidden fixed top-0 left-0 right-0 z-[200] bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 text-center shadow-lg update-banner-slide">
         <div class="max-w-7xl mx-auto flex items-center justify-center gap-4">
-            <span class="text-sm font-medium">âœ¨ New updates are available</span>
+            <span class="text-sm font-medium">New updates are available</span>
             <button onclick="applyPendingUpdate()" class="bg-white text-blue-600 px-4 py-1 rounded-full text-sm font-bold hover:bg-blue-50 transition">Refresh Now</button>
             <button onclick="dismissUpdateBanner()" class="text-white/80 hover:text-white transition ml-2" aria-label="Dismiss">
                 <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"/></svg>
@@ -139,25 +160,25 @@
             </div>
         </section>
 
-        <section id="announcements" class="section-padding bg-white shadow-lg rounded-xl mt-6 mx-4 transition-colors">
+        <section id="announcements" class="section-padding bg-white shadow-lg rounded-xl mt-6 mx-4 transition-colors overflow-visible">
             <h2 class="text-2xl font-bold text-gray-700 border-b-2 pb-2 mb-6 flex items-center" style="border-color: var(--primary-blue);">
                 <i data-lucide="bell" class="w-6 h-6 mr-2" style="color: var(--primary-blue);"></i>
                 Latest Updates
             </h2>
 
-            <div id="announcements-container" class="grid md:grid-cols-3 gap-6">
+            <div id="announcements-container" class="section-scroll flex gap-4 overflow-x-auto pb-4 scroll-smooth" style="-webkit-overflow-scrolling: touch; scrollbar-width: none;">
                 <!-- Announcements loaded from Firebase -->
             </div>
 
-            <div class="mt-8 text-center">
-                <button id="open-announcement-history-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center mx-auto">
+            <div class="mt-4 text-center">
+                <button id="view-all-announcements-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105 flex items-center justify-center mx-auto">
                     <i data-lucide="history" class="w-5 h-5 mr-2"></i>
                     View All Announcement History
                 </button>
             </div>
         </section>
 
-        <section id="assignments" class="section-padding bg-white shadow-lg rounded-xl mt-6 mx-4 transition-colors">
+        <section id="assignments" class="section-padding bg-white shadow-lg rounded-xl mt-6 mx-4 transition-colors overflow-visible">
             <h2 class="text-2xl font-bold text-gray-700 border-b-2 pb-2 mb-6 flex items-center" style="border-color: var(--primary-blue);">
                 <i data-lucide="clipboard-list" class="w-6 h-6 mr-2" style="color: var(--primary-blue);"></i>
                 Assessment Tasks
@@ -167,7 +188,7 @@
                 <!-- Stats loaded dynamically -->
             </div>
             
-            <div id="assignments-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div id="assignments-container" class="section-scroll flex gap-4 overflow-x-auto pb-4 scroll-smooth" style="-webkit-overflow-scrolling: touch; scrollbar-width: none;">
                 <!-- Assignments loaded from Firebase -->
             </div>
 
@@ -204,24 +225,24 @@
             </p>
         </section>
 
-        <section id="subjects" class="section-padding bg-white shadow-lg rounded-xl mt-6 mx-4 transition-colors">
+        <section id="subjects" class="section-padding bg-white shadow-lg rounded-xl mt-6 mx-4 transition-colors overflow-visible">
             <h2 class="text-2xl font-bold text-gray-700 border-b-2 pb-2 mb-6 flex items-center" style="border-color: var(--primary-blue);">
                 <i data-lucide="book-open" class="w-6 h-6 mr-2" style="color: var(--primary-blue);"></i>
                 Course Subjects & Resources
             </h2>
             
-            <div id="subjects-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div id="subjects-container" class="section-scroll flex gap-4 overflow-x-auto pb-4 scroll-smooth" style="-webkit-overflow-scrolling: touch; scrollbar-width: none;">
                 <!-- Subjects loaded from Firebase -->
             </div>
         </section>
 
-        <section id="contact" class="section-padding bg-white shadow-lg rounded-xl mt-6 mb-6 mx-4 transition-colors">
+        <section id="contact" class="section-padding bg-white shadow-lg rounded-xl mt-6 mb-6 mx-4 transition-colors overflow-visible">
             <h2 class="text-2xl font-bold text-gray-700 border-b-2 pb-2 mb-6 flex items-center" style="border-color: var(--primary-blue);">
                 <i data-lucide="users" class="w-6 h-6 mr-2" style="color: var(--primary-blue);"></i>
                 Instructor & Contact Information
             </h2>
             
-            <div id="contact-container" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div id="contact-container" class="section-scroll flex gap-4 overflow-x-auto pb-4 scroll-smooth" style="-webkit-overflow-scrolling: touch; scrollbar-width: none;">
                 <!-- Contacts loaded from Firebase -->
             </div>
         </section>
@@ -351,9 +372,9 @@
             <div class="swipe-indicator md:hidden"></div>
             <p class="swipe-text">Swipe down to close</p>
             <div class="flex justify-between items-center border-b p-6">
-                <div class="flex items-center gap-3">
-                    <div id="subject-modal-icon" class="w-12 h-12 rounded-full flex items-center justify-center text-white bg-blue-600"></div>
-                    <div>
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <div id="subject-modal-icon" class="flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-white bg-blue-600"></div>
+                    <div class="min-w-0 flex-1">
                         <div class="breadcrumb">
                             <span>Home</span>
                             <span class="breadcrumb-separator">/</span>

@@ -436,16 +436,16 @@ function createAnnouncementCard(announcement) {
     })();
 
     return `
-        <div class="relative p-6 bg-white border border-gray-200 rounded-xl shadow-lg transition hover:shadow-xl hover:border-blue-400">
+        <div class="flex-shrink-0 w-80 h-48 snap-start scroll-card flex flex-col relative p-6 bg-white border border-gray-200 rounded-xl shadow-lg transition hover:shadow-xl hover:border-blue-400">
             ${isNew ? '<span class="new-badge">NEW</span>' : ''}
             <div class="flex items-center gap-2 mb-2">
                 <span class="text-xs font-semibold px-3 py-1 rounded-full border ${announcement.tagColor}">
                     ${escapeHTML(announcement.category)}
                 </span>
             </div>
-            <h4 class="mt-2 text-lg font-bold text-gray-800">${escapeHTML(announcement.title)}</h4>
-            <p class="mt-2 text-sm text-gray-600">${escapeHTML(announcement.description)}</p>
-            <div class="mt-3 text-xs text-gray-400 flex items-center gap-2">
+            <h4 class="mt-2 text-lg font-bold text-gray-800 line-clamp-2">${escapeHTML(announcement.title)}</h4>
+            <p class="mt-2 text-sm text-gray-600 line-clamp-3 flex-1">${escapeHTML(announcement.description)}</p>
+            <div class="mt-auto pt-3 text-xs text-gray-400 flex items-center gap-2 border-t">
                 <i data-lucide="clock" class="w-3 h-3"></i>
                 ${escapeHTML(new Date(announcement.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }))}
             </div>
@@ -472,19 +472,19 @@ function createAssignmentCard(assignment) {
     }
 
     return `
-        <div class="group p-6 bg-white border-2 border-gray-200 rounded-xl shadow-lg transition hover:shadow-xl hover:border-blue-600 cursor-pointer assignment-card"
+        <div class="flex-shrink-0 w-72 min-h-[280px] snap-start scroll-card flex flex-col group p-6 bg-white border-2 border-gray-200 rounded-xl shadow-lg transition hover:shadow-xl hover:border-blue-600 cursor-pointer assignment-card"
              data-assignment-id="${escapeHTML(assignment.id)}">
             <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center gap-2">
+                <div class="flex items-center gap-2 flex-wrap">
                     <span class="text-xs font-semibold px-3 py-1 rounded-full ${assignment.categoryColor}">
                         ${escapeHTML(assignment.category)}
                     </span>
-                    ${assignment.subject ? `<span class="text-xs font-semibold px-3 py-1 rounded-full bg-blue-600 text-white">${escapeHTML(assignment.subject)}</span>` : ''}
+                    ${assignment.subject ? `<span class="text-xs font-semibold px-3 py-1 rounded-full bg-blue-600 text-white truncate max-w-[120px]">${escapeHTML(assignment.subject)}</span>` : ''}
                     ${urgencyLabel}
                 </div>
             </div>
-            <h4 class="text-lg font-bold text-gray-800 mb-2">${escapeHTML(assignment.title)}</h4>
-            <p class="text-sm text-gray-600 mb-4 line-clamp-2">${escapeHTML(assignment.description)}</p>
+            <h4 class="text-lg font-bold text-gray-800 mb-2 line-clamp-2">${escapeHTML(assignment.title)}</h4>
+            <p class="text-sm text-gray-600 mb-4 line-clamp-2 flex-1">${escapeHTML(assignment.description)}</p>
             
             ${isPast ? `
                 <div class="text-center py-2 px-4 bg-gray-100 rounded-lg">
@@ -686,12 +686,12 @@ function openSubjectModal(subjectId) {
     const driveLink = document.getElementById('drive-folder-link');
     const breadcrumbName = document.getElementById('subject-breadcrumb-name');
 
-    modalIcon.className = `w-12 h-12 rounded-full flex items-center justify-center text-white ${subject.color}`;
+    modalIcon.className = `flex-shrink-0 w-10 h-10 rounded-xl flex items-center justify-center text-white ${subject.color}`;
     modalIcon.innerHTML = `<i data-lucide="${escapeHTML(subject.icon)}" class="w-6 h-6"></i>`;
     modalTitle.textContent = subject.name;
     modalSubtitle.textContent = subject.fullName;
     driveLink.href = subject.driveFolder;
-    breadcrumbName.textContent = subject.name;
+    breadcrumbName.innerHTML = `<span class="max-w-[160px] truncate inline-block align-bottom" title="${escapeHTML(subject.name)}">${escapeHTML(subject.name)}</span>`;
 
     document.title = `${subject.name} - CSE 63B Portal`;
 
@@ -922,36 +922,35 @@ function createSubjectCard(subject) {
     const categoryCount = Object.keys(subject.categories).length;
 
     return `
-        <div class="subject-card cursor-pointer bg-white border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden transition hover:shadow-2xl hover:border-blue-600 transform hover:scale-105"
-             data-subject-id="${escapeHTML(subject.id)}"
-             data-subject-name="${escapeHTML(subject.name.toLowerCase())}"
-             data-subject-teacher="${escapeHTML(subject.teacher.toLowerCase())}">
-            <div class="${subject.color} p-6 text-white relative">
-                <div class="absolute top-4 right-4">
-                    <span class="text-xs font-semibold px-3 py-1 rounded-full ${typeColor}">
-                        ${typeText}
-                    </span>
-                </div>
-                <div class="w-14 h-14 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm mb-4">
-                    <i data-lucide="${escapeHTML(subject.icon)}" class="w-7 h-7"></i>
-                </div>
-                <h3 class="text-2xl font-bold">${escapeHTML(subject.name)}</h3>
-                <p class="text-sm opacity-90 mt-1">${escapeHTML(subject.fullName)}</p>
-                <p class="text-xs opacity-75 mt-2">${escapeHTML(subject.teacher)}</p>
-            </div>
-            <div class="p-4 bg-white">
-                <div class="flex items-center justify-between mb-3">
-                    <div class="flex items-center gap-2 text-sm text-gray-600">
-                        <i data-lucide="folder" class="w-4 h-4"></i>
-                        <span class="font-medium">${categoryCount} Categories</span>
+        <div class="flex-shrink-0 w-72 h-64 snap-start scroll-card flex flex-col">
+            <div class="subject-card flex-1 flex flex-col cursor-pointer bg-white border-2 border-gray-200 rounded-xl shadow-lg overflow-hidden transition hover:shadow-2xl hover:border-blue-600 transform hover:scale-105"
+                 data-subject-id="${escapeHTML(subject.id)}"
+                 data-subject-name="${escapeHTML(subject.name.toLowerCase())}"
+                 data-subject-teacher="${escapeHTML(subject.teacher.toLowerCase())}">
+                <div class="${subject.color} p-6 text-white relative flex flex-col justify-between min-h-[160px]">
+                    <div class="flex justify-between items-start mb-3">
+                        <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
+                            <i data-lucide="${escapeHTML(subject.icon)}" class="w-6 h-6"></i>
+                        </div>
+                        <span class="text-xs font-semibold px-3 py-1 rounded-full ${typeColor}">
+                            ${typeText}
+                        </span>
                     </div>
-                    <i data-lucide="chevron-right" class="w-5 h-5 text-blue-600"></i>
+                    <div>
+                        <h3 class="text-sm font-bold line-clamp-2 leading-tight">${escapeHTML(subject.name)}</h3>
+                        <p class="text-xs opacity-80 truncate mt-1">${escapeHTML(subject.fullName)}</p>
+                        <p class="text-xs opacity-70 truncate mt-1">${escapeHTML(subject.teacher)}</p>
+                    </div>
                 </div>
-                <button onclick="openSubjectModal('${escapeHTML(subject.id)}'); event.stopPropagation();"
-                        class="w-full text-center bg-blue-50 hover:bg-blue-100 text-blue-600 font-medium py-2 px-4 rounded-lg transition text-sm flex items-center justify-center gap-2">
-                    <i data-lucide="folder-open" class="w-4 h-4"></i>
-                    View Resources
-                </button>
+                <div class="p-4 bg-white flex-1 flex flex-col justify-end">
+                    <div class="flex items-center justify-between mb-3">
+                        <div class="flex items-center gap-2 text-sm text-gray-600">
+                            <i data-lucide="folder" class="w-4 h-4"></i>
+                            <span class="font-medium">${categoryCount} Categories</span>
+                        </div>
+                        <i data-lucide="chevron-right" class="w-5 h-5 text-blue-600"></i>
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -965,42 +964,42 @@ function createContactCard(contact) {
     const hasImage = contact.profileImage && contact.profileImage !== '';
 
     return `
-        <div class="p-6 bg-gray-50 border border-gray-200 rounded-xl shadow-md transition hover:shadow-lg">
-            <div class="flex items-start gap-4">
-                <div class="w-20 h-20 rounded-full flex items-center justify-center flex-shrink-0 ${hasImage ? '' : 'bg-blue-100 border-4 border-blue-600'}">
+        <div class="flex-shrink-0 w-72 h-auto min-h-[200px] snap-start scroll-card flex flex-col p-6 bg-white border-2 border-gray-200 rounded-xl shadow-lg transition hover:shadow-xl hover:border-blue-600">
+            <div class="flex items-center gap-3 mb-3">
+                <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center overflow-hidden ${hasImage ? '' : 'bg-blue-100'}">
                     ${hasImage
-            ? `<img src="${escapeHTML(contact.profileImage)}" alt="${escapeHTML(contact.name)}" class="w-full h-full rounded-full object-cover" loading="lazy">`
-            : `<i data-lucide="user" class="w-10 h-10 text-blue-600"></i>`
+            ? `<img src="${escapeHTML(contact.profileImage)}" alt="${escapeHTML(contact.name)}" class="w-full h-full object-cover">`
+            : `<i data-lucide="user" class="w-5 h-5 text-blue-600"></i>`
         }
                 </div>
-                <div class="flex-1 min-w-0">
-                    <h3 class="text-lg font-bold text-gray-800">${escapeHTML(contact.name)}</h3>
-                    <p class="text-sm text-blue-600 font-semibold">${escapeHTML(contact.designation)}</p>
-                    <div class="mt-3 space-y-2 text-sm text-gray-600">
-                        <div class="flex items-center gap-2" style="display:flex;align-items:center;gap:8px;">
-                            <i data-lucide="mail" class="w-4 h-4 text-gray-500 flex-shrink-0" style="display:inline-flex;align-self:center;"></i>
-                            <a href="mailto:${escapeHTML(contact.email)}" class="hover:underline hover:text-blue-600 break-all">${escapeHTML(contact.email)}</a>
-                        </div>
-                        <div class="flex items-center gap-2" style="display:flex;align-items:center;gap:8px;">
-                            <i data-lucide="phone" class="w-4 h-4 text-gray-500 flex-shrink-0" style="display:inline-flex;align-self:center;"></i>
-                            <a href="tel:${escapeHTML(contact.phone)}" class="hover:underline hover:text-blue-600">${escapeHTML(contact.phone)}</a>
-                        </div>
-                        ${contact.howToContact ? `
-                            <div class="mt-3 pt-3 border-t border-gray-200">
-                                <div class="flex items-start gap-2">
-                                    <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                                        <i data-lucide="info" class="w-3 h-3 text-blue-600"></i>
-                                    </div>
-                                    <div class="flex-1 min-w-0">
-                                        <p class="font-semibold text-gray-700 text-xs mb-1">How to Contact</p>
-                                        <p class="text-xs text-gray-600 leading-relaxed">${escapeHTML(contact.howToContact)}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        ` : ''}
+                <div class="min-w-0 flex-1">
+                    <p class="font-semibold text-gray-800 truncate text-sm" title="${escapeHTML(contact.name)}">${escapeHTML(contact.name)}</p>
+                    <p class="text-xs text-blue-600 truncate" title="${escapeHTML(contact.designation)}">${escapeHTML(contact.designation)}</p>
+                </div>
+            </div>
+            <div class="space-y-1.5 text-xs text-gray-600">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="mail" class="flex-shrink-0 w-3.5 h-3.5"></i>
+                    <span class="truncate" title="${escapeHTML(contact.email)}"><a href="mailto:${escapeHTML(contact.email)}" class="hover:underline hover:text-blue-600">${escapeHTML(contact.email)}</a></span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <i data-lucide="phone" class="flex-shrink-0 w-3.5 h-3.5"></i>
+                    <span class="truncate" title="${escapeHTML(contact.phone)}"><a href="tel:${escapeHTML(contact.phone)}" class="hover:underline hover:text-blue-600">${escapeHTML(contact.phone)}</a></span>
+                </div>
+            </div>
+            ${contact.howToContact ? `
+            <div class="mt-3 pt-3 border-t border-gray-200">
+                <div class="flex items-start gap-2">
+                    <div class="w-5 h-5 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <i data-lucide="info" class="w-3 h-3 text-blue-600"></i>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="font-semibold text-gray-700 text-xs mb-1">How to Contact</p>
+                        <p class="text-xs text-gray-600 leading-relaxed">${escapeHTML(contact.howToContact)}</p>
                     </div>
                 </div>
             </div>
+            ` : ''}
         </div>
     `;
 }
@@ -1133,16 +1132,20 @@ function renderAnnouncements() {
     if (!container) return;
     const visible = announcementsData.filter(a => shouldShowAnnouncement(a.date));
 
+    const wrapper = container.parentElement;
+    wrapper.querySelectorAll('.empty-state-block').forEach(el => el.remove());
+
     if (visible.length === 0) {
-        container.innerHTML = `
-            <div class="col-span-full text-center py-12">
-                <i data-lucide="inbox" class="w-16 h-16 mx-auto text-gray-300 mb-4"></i>
-                <p class="text-gray-500 text-lg font-medium">No recent announcements</p>
-                <p class="text-gray-400 text-sm mt-2">Check back later for updates</p>
+        container.style.display = 'none';
+        container.insertAdjacentHTML('afterend', `
+            <div class="empty-state-block text-center py-12 text-gray-400 w-full">
+                <p class="text-lg font-medium">No items yet</p>
             </div>
-        `;
+        `);
     } else {
+        container.style.display = '';
         container.innerHTML = visible.map(createAnnouncementCard).join('');
+        initScrollFocus(container);
     }
 }
 
@@ -1162,7 +1165,7 @@ function renderAssignments() {
 
     // Build filter buttons
     const filterOrder = ['All', 'Assignment', 'Test', 'Presentation'];
-    const filterButtonsHtml = '<div class="col-span-full flex gap-2 flex-wrap mb-4">' + filterOrder.map(f =>
+    const filterButtonsHtml = '<div class="flex gap-2 flex-wrap mb-4">' + filterOrder.map(f =>
         `<button class="assignment-filter-btn px-3 py-1.5 rounded-full text-xs font-semibold transition ${
             (f === 'All' && (currentFilter === 'all' || currentFilter === 'All')) || currentFilter === f
                 ? 'bg-blue-600 text-white'
@@ -1170,29 +1173,45 @@ function renderAssignments() {
         }" data-filter="${f}">${f}</button>`
     ).join('') + '</div>';
 
-    if (visible.length === 0) {
-        container.innerHTML = filterButtonsHtml + `
-            <div class="col-span-full text-center py-12">
-                <i data-lucide="check-circle" class="w-16 h-16 mx-auto text-green-500 mb-4"></i>
-                <p class="text-gray-500 text-lg font-medium">No active assignments</p>
-                <p class="text-gray-400 text-sm mt-2">You're all caught up!</p>
-            </div>
-        `;
-        const statsDiv = document.getElementById('assignment-stats');
-        if (statsDiv) statsDiv.style.display = 'none';
-    } else {
-        container.innerHTML = filterButtonsHtml + visible.map(createAssignmentCard).join('');
-        renderAssignmentStats(visible);
-        startGlobalCountdown();
+    let filtersDiv = document.getElementById('assignment-filters-wrapper');
+    if (!filtersDiv) {
+        filtersDiv = document.createElement('div');
+        filtersDiv.id = 'assignment-filters-wrapper';
+        container.parentNode.insertBefore(filtersDiv, container);
     }
+    filtersDiv.innerHTML = filterButtonsHtml;
 
     // Bind filter button clicks
-    document.querySelectorAll('.assignment-filter-btn').forEach(btn => {
+    filtersDiv.querySelectorAll('.assignment-filter-btn').forEach(btn => {
         btn.addEventListener('click', function () {
             currentFilter = this.dataset.filter;
             renderAssignments();
         });
     });
+
+    const wrapper = container.parentElement;
+    wrapper.querySelectorAll('.empty-state-block').forEach(el => el.remove());
+
+    if (visible.length === 0) {
+        container.style.display = 'none';
+        const statsDiv = document.getElementById('assignment-stats');
+        if (statsDiv) statsDiv.style.display = 'none';
+        
+        container.insertAdjacentHTML('afterend', `
+            <div class="empty-state-block text-center py-12 text-gray-400 w-full">
+                <p class="text-lg font-medium">No items yet</p>
+            </div>
+        `);
+    } else {
+        container.style.display = '';
+        const statsDiv = document.getElementById('assignment-stats');
+        if (statsDiv) statsDiv.style.display = '';
+        
+        container.innerHTML = visible.map(createAssignmentCard).join('');
+        renderAssignmentStats(visible);
+        startGlobalCountdown();
+        initScrollFocus(container);
+    }
 
     // Bind click handlers
     container.querySelectorAll('.assignment-card').forEach(card => {
@@ -1207,18 +1226,74 @@ function renderAssignments() {
 function renderSubjects() {
     const container = document.getElementById('subjects-container');
     if (!container) return;
-    container.innerHTML = subjectsData.map(createSubjectCard).join('');
-    document.querySelectorAll('.subject-card').forEach(card => {
-        card.addEventListener('click', function () {
-            openSubjectModal(this.dataset.subjectId);
+    
+    const wrapper = container.parentElement;
+    wrapper.querySelectorAll('.empty-state-block').forEach(el => el.remove());
+
+    if (subjectsData.length === 0) {
+        container.style.display = 'none';
+        container.insertAdjacentHTML('afterend', `
+            <div class="empty-state-block text-center py-12 text-gray-400 w-full">
+                <p class="text-lg font-medium">No items yet</p>
+            </div>
+        `);
+    } else {
+        container.style.display = '';
+        container.innerHTML = subjectsData.map(createSubjectCard).join('');
+        document.querySelectorAll('.subject-card').forEach(card => {
+            card.addEventListener('click', function () {
+                openSubjectModal(this.dataset.subjectId);
+            });
         });
-    });
+        initScrollFocus(container);
+    }
 }
 
 function renderContacts() {
     const container = document.getElementById('contact-container');
     if (!container) return;
-    container.innerHTML = contactData.map(createContactCard).join('');
+
+    const wrapper = container.parentElement;
+    wrapper.querySelectorAll('.empty-state-block').forEach(el => el.remove());
+
+    if (contactData.length === 0) {
+        container.style.display = 'none';
+        container.insertAdjacentHTML('afterend', `
+            <div class="empty-state-block text-center py-12 text-gray-400 w-full">
+                <p class="text-lg font-medium">No items yet</p>
+            </div>
+        `);
+    } else {
+        container.style.display = '';
+        container.innerHTML = contactData.map(createContactCard).join('');
+        initScrollFocus(container);
+    }
+}
+
+// ============================================
+// FOCUS HIGHLIGHT (Change 5)
+// ============================================
+
+function initScrollFocus(scrollContainer) {
+  const cards = scrollContainer.querySelectorAll('.scroll-card');
+  if (!cards || cards.length === 0) return;
+  
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.intersectionRatio > 0.6) {
+        entry.target.classList.add('card-focused');
+        entry.target.classList.remove('card-dimmed');
+      } else {
+        entry.target.classList.remove('card-focused');
+        entry.target.classList.add('card-dimmed');
+      }
+    });
+  }, {
+    root: scrollContainer,
+    threshold: [0.4, 0.6, 0.8]
+  });
+
+  cards.forEach(card => observer.observe(card));
 }
 
 // Full render (used when applying deferred updates)
@@ -1478,7 +1553,7 @@ function initModalHandlers() {
         });
     }
 
-    const openAnnouncementHistoryBtn = document.getElementById('open-announcement-history-btn');
+    const openAnnouncementHistoryBtn = document.getElementById('view-all-announcements-btn');
     if (openAnnouncementHistoryBtn) {
         openAnnouncementHistoryBtn.addEventListener('click', function () {
             const body = document.getElementById('announcement-history-body');
