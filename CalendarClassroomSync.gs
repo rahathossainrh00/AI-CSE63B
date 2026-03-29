@@ -28,6 +28,87 @@ function getSemesterStart() {
   return new Date(now.getFullYear(), 0, 1);                  // Jan 1
 }
 
+function getCurrentSemesterKey() {
+  const now = new Date();
+  const month = now.getMonth() + 1;
+  const year = now.getFullYear();
+
+  if (month >= 8) return `autumn-${year}`;
+  if (month >= 5) return `summer-${year}`;
+  return `spring-${year}`;
+}
+
+function clearSemesterData() {
+  const semesterKey = getCurrentSemesterKey();
+  Logger.log(`🗑️ Starting semester reset for: ${semesterKey}`);
+
+  const collections = ['calendar', 'assignments', 'announcements'];
+  let totalDeleted = 0;
+
+  for (const collection of collections) {
+    try {
+      const docs = fetchAllDocsInCollection(collection);
+      for (const doc of docs) {
+        const docId = extractDocId(doc.name);
+        deleteFirestoreDoc(collection, docId);
+        totalDeleted++;
+      }
+      Logger.log(`  ✅ Cleared ${collection}: ${docs.length} documents deleted`);
+    } catch (e) {
+      Logger.log(`  ❌ Error clearing ${collection}: ${e.message}`);
+    }
+  }
+
+  // Save the cleared semester key to Firestore
+  setFirestoreDoc('settings', 'semester_state', {
+    lastClearedSemester: semesterKey,
+    clearedAt: new Date().toISOString()
+  });
+
+  // Write audit log entry
+  try {
+    const auditId = 'RESET_' + semesterKey;
+    setFirestoreDoc('audit_log', auditId, {
+      action: 'semester_reset',
+      semesterKey: semesterKey,
+      totalDeleted: String(totalDeleted),
+      clearedAt: new Date().toISOString(),
+      collections: 'calendar, assignments, announcements'
+    });
+  } catch (e) {
+    Logger.log(`  ⚠️ Could not write audit log: ${e.message}`);
+  }
+
+  Logger.log(`🗑️ Semester reset complete. Total deleted: ${totalDeleted}`);
+}
+
+function checkAndResetSemester() {
+  const currentKey = getCurrentSemesterKey();
+
+  try {
+    const state = getFirestoreDoc('settings', 'semester_state');
+
+    if (state) {
+      const fields = parseFirestoreFields(state.fields);
+      const lastCleared = fields.lastClearedSemester || '';
+
+      if (lastCleared === currentKey) {
+        Logger.log(`✅ Semester already reset for ${currentKey}. Skipping.`);
+        return false; // already reset this semester
+      }
+    }
+
+    // New semester detected — run the reset
+    Logger.log(`🆕 New semester detected: ${currentKey}. Running reset...`);
+    clearSemesterData();
+    return true;
+
+  } catch (e) {
+    Logger.log(`⚠️ Could not check semester state: ${e.message}. Skipping reset.`);
+    return false;
+  }
+}
+
 // ============================================================
 // GOOGLE CALENDAR COLOR ID REFERENCE
 // ============================================================
@@ -59,12 +140,23 @@ function syncClassroom() {
 }
 
 function syncAll() {
+  // Check if a new semester has started — clear stale data first
+  checkAndResetSemester();
+  
+  // Then run normal sync — fresh data populates immediately
   syncCalendar();
   syncClassroom();
 }
 
 function manualSync() {
   syncCourseList(); // always refresh course list on manual sync
+  syncAll();
+}
+
+function manualReset() {
+  Logger.log('🔧 Manual semester reset triggered.');
+  clearSemesterData();
+  Logger.log('🔧 Manual reset complete. Running sync...');
   syncAll();
 }
 
@@ -360,9 +452,29 @@ function _syncClassroomToFirestore() {
               const day = String(cw.dueDate.day).padStart(2, '0');
 
               if (cw.dueTime && cw.dueTime.hours !== undefined) {
-                const hours = String(cw.dueTime.hours || 0).padStart(2, '0');
-                const minutes = String(cw.dueTime.minutes || 0).padStart(2, '0');
-                deadline = `${year}-${month}-${day}T${hours}:${minutes}:00`;
+                // Classroom API dueTime is in UTC — convert to Bangladesh time (UTC+6)
+                const utcHours = cw.dueTime.hours || 0;
+                const utcMinutes = cw.dueTime.minutes || 0;
+
+                // Add 6 hours for Bangladesh timezone
+                const totalMinutes = utcHours * 60 + utcMinutes + (6 * 60);
+                const localHours = Math.floor(totalMinutes / 60) % 24;
+                const localMinutes = totalMinutes % 60;
+
+                // Handle day rollover if time crosses midnight
+                const dayRollover = Math.floor(totalMinutes / (24 * 60));
+
+                if (dayRollover > 0) {
+                  // Recalculate date with rollover
+                  const dateObj = new Date(`${year}-${month}-${day}T00:00:00Z`);
+                  dateObj.setUTCDate(dateObj.getUTCDate() + dayRollover);
+                  const newYear = dateObj.getUTCFullYear();
+                  const newMonth = String(dateObj.getUTCMonth() + 1).padStart(2, '0');
+                  const newDay = String(dateObj.getUTCDate()).padStart(2, '0');
+                  deadline = `${newYear}-${newMonth}-${newDay}T${String(localHours).padStart(2, '0')}:${String(localMinutes).padStart(2, '0')}:00`;
+                } else {
+                  deadline = `${year}-${month}-${day}T${String(localHours).padStart(2, '0')}:${String(localMinutes).padStart(2, '0')}:00`;
+                }
               } else {
                 deadline = `${year}-${month}-${day}T23:59:00`;
               }
